@@ -173,6 +173,12 @@ class BedrockModel(BaseChatModel):
             "tool_call": True,
             "stream_tool_call": False,
         },
+        "mistral.mistral-large-2407-v1:0": {
+            "system": True,
+            "multimodal": False,
+            "tool_call": True,
+            "stream_tool_call": False,
+        },
         "cohere.command-r-v1:0": {
             "system": True,
             "multimodal": False,
@@ -336,8 +342,33 @@ class BedrockModel(BaseChatModel):
             elif isinstance(message, AssistantMessage):
                 if message.content:
                     # Text message
-                    messages.append(
-                        {"role": message.role, "content": [{"text": message.content}]}
+                    if message.tool_calls:
+                        tool_input = json.loads(message.tool_calls[0].function.arguments)
+                        messages.append(
+                            {
+                                "role": message.role,
+                                "content": [
+                                    {
+                                        # Tool use message
+                                        "toolUse": {
+                                            "toolUseId": message.tool_calls[0].id,
+                                            "name": message.tool_calls[0].function.name,
+                                            "input": tool_input,
+                                        },
+                                    }
+                                ],
+                            }
+                        )
+                    else:
+                        messages.append(
+                            {
+                                "role": message.role,
+                                "content": [
+                                    {
+                                        "text": message.content,
+                                    }
+                                ],
+                            }                    
                     )
                 else:
                     # Tool use message
@@ -351,7 +382,7 @@ class BedrockModel(BaseChatModel):
                                         "toolUseId": message.tool_calls[0].id,
                                         "name": message.tool_calls[0].function.name,
                                         "input": tool_input,
-                                    }
+                                    },
                                 }
                             ],
                         }
@@ -462,7 +493,7 @@ class BedrockModel(BaseChatModel):
                     )
             message.tool_calls = tool_calls
             message.content = None
-        else:
+        elif content:
             message.content = content[0]["text"]
 
         response = ChatResponse(
