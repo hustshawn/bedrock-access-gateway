@@ -1,11 +1,11 @@
-from typing import Annotated
+from typing import Annotated, Final
 
 from fastapi import APIRouter, Depends, Body
 from fastapi.responses import StreamingResponse
 
 from api.auth import api_key_auth
 from api.models.bedrock import BedrockModel
-from api.schema import ChatRequest, ChatResponse, ChatStreamResponse
+from api.schema import ChatRequest, ChatResponse, ChatStreamResponse, SystemMessage
 from api.setting import DEFAULT_MODEL
 import logging
 
@@ -13,6 +13,12 @@ router = APIRouter(
     prefix="/{deployment}/chat",
     dependencies=[Depends(api_key_auth)],
     # responses={404: {"description": "Not found"}},
+)
+
+JSON_MODE_SYSTEM_PROMPT: Final = SystemMessage(
+    name="json_mode",
+    role="system",
+    content="You are a helpful assistant designed to output JSON without extra text",
 )
 
 
@@ -42,6 +48,16 @@ async def chat_completions(
         chat_request.model = DEFAULT_MODEL
     else:
         chat_request.model = deployment
+
+    # JSON mode handling
+    # Ref: https://platform.openai.com/docs/guides/structured-outputs/json-mode
+    response_format = chat_request.response_format
+    if (
+        chat_request.stream
+        or response_format
+        and response_format["type"] == "json_object"
+    ):
+        chat_request.messages.append(JSON_MODE_SYSTEM_PROMPT)
 
     logging.debug(f"chat_request: {chat_request}")
 
