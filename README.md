@@ -1,6 +1,6 @@
 [中文](./README_CN.md)
 
-# Bedrock Proxy API
+# Bedrock Proxy API for Azure OpenAI
 
 AzureOpenAI-compatible RESTful APIs for Amazon Bedrock.
 
@@ -9,6 +9,7 @@ This is a fork project from [Bedrock Access Gateway](https://github.com/aws-samp
 **Enhanced Features:**
 - [x] AzureOpenAI client
 - [x] Deployment on Amazon EKS
+- [x] [JSON mode](https://learn.microsoft.com/sv-se/azure/ai-services/openai/how-to/json-mode?tabs=python) response format
 
 ## Setup
 ### Happy path for testing
