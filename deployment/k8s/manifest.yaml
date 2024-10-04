@@ -31,7 +31,7 @@ spec:
       serviceAccountName: bedrock-proxy-api
       containers:
       - name: bedrock-proxy-api
-        image: public.ecr.aws/l4e4g2u7/bedrock-proxy-api:latest
+        image: ghcr.io/hustshawn/bedrock-proxy-api-for-azure-openai:latest
         imagePullPolicy: Always
         ports:
         - name: http
