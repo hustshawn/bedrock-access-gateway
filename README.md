@@ -7,9 +7,11 @@ AzureOpenAI-compatible RESTful APIs for Amazon Bedrock.
 This is a fork project from [Bedrock Access Gateway](https://github.com/aws-samples/bedrock-access-gateway), with the dedicated support for **AzureOpenAI** client instead of **OpenAI** client.
 
 **Enhanced Features:**
+
 - [x] AzureOpenAI client
 - [x] Deployment on Amazon EKS
 - [x] [JSON mode](https://learn.microsoft.com/sv-se/azure/ai-services/openai/how-to/json-mode?tabs=python) response format
+- [x] [AWS Distro for OpenTelemetry](https://aws-otel.github.io/) support, helps on debugging and observability.
 
 ## Setup
 ### Happy path for testing
@@ -42,7 +44,7 @@ make build
 
 Make sure to update the image of the k8s deployment under `deployment/k8s/manifest.yaml`, and run `make deploy` to deploy again.
 
-> [!INFO]
+> [!TIP]
 > Feel free to change the region within the `scripts/push-to-ecr.sh` if you want to change the target ECR repo name and region.
 
 ### Verification
