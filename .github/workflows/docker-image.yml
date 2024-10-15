@@ -3,8 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ "azure-openai" ]
-  pull_request:
-    branches: [ "azure-openai" ]
+  # pull_request:
+  #   branches: [ "azure-openai" ]
 
 jobs:
   build-and-push:
