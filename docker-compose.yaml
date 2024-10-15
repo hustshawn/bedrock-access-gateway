@@ -1,18 +1,47 @@
-version: '3'
+# version: '3'
 services:
   gateway:
     build:
       context: ./src
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_otel
     ports:
       - 8000:80
     volumes:
       - ./src/:/app/
       - ~/.aws:/root/.aws # If not provide AWS credentials from .env, just load your local AWS credentails
-    command: ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+    # command: ["opentelemetry-instrument","uvicorn","api.app:app","--port","8000","--host","0.0.0.0", "--reload"] # reload is not working with Otel instrumented app
+    command: ["opentelemetry-instrument","uvicorn","api.app:app","--port","8000","--host","0.0.0.0"]
     env_file:
     - .env
     environment:
     - DEBUG=true
     - AWS_REGION=us-east-1
-    - AWS_PROFILE=account-b-us
+    - AWS_PROFILE=bedrock
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on:
+    - otel-collector
+    networks:
+      - app-network
+  otel-collector:
+    image: public.ecr.aws/aws-observability/aws-otel-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ~/.aws:/home/aoc/.aws
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # Health check extension
+    environment:
+      - AWS_REGION=us-west-2
+      - AWS_PROFILE=default
+      - AWS_SDK_LOAD_CONFIG=1
+      - AWS_CONFIG_FILE=/home/aoc/.aws/config
+      - AWS_SHARED_CREDENTIALS_FILE=/home/aoc/.aws/credentials
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
